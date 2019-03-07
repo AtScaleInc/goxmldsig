@@ -37,6 +37,13 @@ func (ks *MemoryX509KeyStore) GetKeyPair() (*rsa.PrivateKey, []byte, error) {
 	return ks.privateKey, ks.cert, nil
 }
 
+func NewMemoryX509KeyStore(privKey *rsa.PrivateKey, cert []byte) *MemoryX509KeyStore {
+	return &MemoryX509KeyStore{
+		privateKey: privKey,
+		cert:       cert,
+	}
+}
+
 func RandomKeyStoreForTest() X509KeyStore {
 	key, err := rsa.GenerateKey(rand.Reader, 1024)
 	if err != nil {
