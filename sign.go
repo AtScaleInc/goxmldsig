@@ -10,8 +10,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/beevik/etree"
 	"github.com/AtScaleInc/goxmldsig/etreeutils"
+	"github.com/beevik/etree"
 )
 
 type SigningContext struct {
@@ -165,8 +165,18 @@ func (ctx *SigningContext) ConstructSignature(el *etree.Element, enveloped bool)
 	if err != nil {
 		return nil, err
 	}
-
+	// get string representation of the detached sign info
+	// first have to get a pointer to a document
+	docContainingSignedInfo := &etree.Document{Element: *detatchedSignedInfo}
+	stringRep, err := docContainingSignedInfo.WriteToString()
+	if err != nil {
+		fmt.Printf("Failed to write to string:\n%v\n", err)
+	}
+	fmt.Printf("The detachedSignedInfo(the thing to be digested): \n%v\n", stringRep)
 	digest, err := ctx.digest(detatchedSignedInfo)
+	fmt.Printf("The digest produced using %v is:\n%v\n", ctx.Hash, digest)
+
+	fmt.Printf("")
 	if err != nil {
 		return nil, err
 	}
