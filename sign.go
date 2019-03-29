@@ -24,11 +24,12 @@ type SigningContext struct {
 
 func NewDefaultSigningContext(ks X509KeyStore) *SigningContext {
 	return &SigningContext{
-		Hash:          crypto.SHA256,
-		KeyStore:      ks,
-		IdAttribute:   DefaultIdAttr,
-		Prefix:        DefaultPrefix,
-		Canonicalizer: MakeC14N11Canonicalizer(),
+		Hash:        crypto.SHA256,
+		KeyStore:    ks,
+		IdAttribute: DefaultIdAttr,
+		Prefix:      DefaultPrefix,
+		// Canonicalizer: MakeC14N11Canonicalizer(), does NOT work with netiq
+		Canonicalizer: MakeC14N10ExclusiveCanonicalizerWithPrefixList(""), // does work with net iq
 	}
 }
 
@@ -43,6 +44,7 @@ func (ctx *SigningContext) SetSignatureMethod(algorithmID string) error {
 	return nil
 }
 
+// digest request before adding in signed info
 func (ctx *SigningContext) digest(el *etree.Element) ([]byte, error) {
 	canonical, err := ctx.Canonicalizer.Canonicalize(el)
 	if err != nil {
@@ -58,6 +60,7 @@ func (ctx *SigningContext) digest(el *etree.Element) ([]byte, error) {
 	return hash.Sum(nil), nil
 }
 
+// el here is auth request
 func (ctx *SigningContext) constructSignedInfo(el *etree.Element, enveloped bool) (*etree.Element, error) {
 	digestAlgorithmIdentifier := ctx.GetDigestAlgorithmIdentifier()
 	if digestAlgorithmIdentifier == "" {
@@ -161,6 +164,7 @@ func (ctx *SigningContext) ConstructSignature(el *etree.Element, enveloped bool)
 
 	// Finally detatch the SignedInfo in order to capture all of the namespace
 	// declarations in the scope we've constructed.
+	// what is the significance of capturing namespaces?
 	detatchedSignedInfo, err := etreeutils.NSDetatch(sigNSCtx, signedInfo)
 	if err != nil {
 		return nil, err
@@ -172,8 +176,9 @@ func (ctx *SigningContext) ConstructSignature(el *etree.Element, enveloped bool)
 	if err != nil {
 		fmt.Printf("Failed to write to string:\n%v\n", err)
 	}
-	fmt.Printf("The detachedSignedInfo(the thing to be digested): \n%v\n", stringRep)
-	digest, err := ctx.digest(detatchedSignedInfo)
+
+	digest, err := ctx.digest(detatchedSignedInfo) // original line -- detached signed info at this point had namespaces added by the nsdetach function
+	// digest, err := ctx.digest(signedInfo.Copy()) // failed attempt - thought by preventing adding attributes to the signed info element it would yield a valid signature
 	fmt.Printf("The digest produced using %v is:\n%v\n", ctx.Hash, digest)
 
 	fmt.Printf("")
