@@ -169,13 +169,6 @@ func (ctx *SigningContext) ConstructSignature(el *etree.Element, enveloped bool)
 	if err != nil {
 		return nil, err
 	}
-	// get string representation of the detached sign info
-	// first have to get a pointer to a document
-	docContainingSignedInfo := &etree.Document{Element: *detatchedSignedInfo}
-	stringRep, err := docContainingSignedInfo.WriteToString()
-	if err != nil {
-		fmt.Printf("Failed to write to string:\n%v\n", err)
-	}
 
 	digest, err := ctx.digest(detatchedSignedInfo) // original line -- detached signed info at this point had namespaces added by the nsdetach function
 	// digest, err := ctx.digest(signedInfo.Copy()) // failed attempt - thought by preventing adding attributes to the signed info element it would yield a valid signature
