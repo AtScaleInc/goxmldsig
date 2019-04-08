@@ -5,7 +5,6 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"crypto/x509/pkix"
-	"fmt"
 	"math/big"
 	"time"
 )
@@ -47,7 +46,6 @@ func NewMemoryX509KeyStore(privKey *rsa.PrivateKey, cert []byte) *MemoryX509KeyS
 }
 
 func RandomKeyStoreForTest() X509KeyStore {
-	fmt.Printf("generating new key store")
 	key, err := rsa.GenerateKey(rand.Reader, 1024)
 	if err != nil {
 		panic(err)
@@ -65,8 +63,6 @@ func RandomKeyStoreForTest() X509KeyStore {
 		SerialNumber:       "customserialnumber",
 		CommonName:         "commonName",
 	}
-	fmt.Printf("\n\n pay attention! \n\nHere is the raw issuer value prior to creating cert: %v", pkixName)
-	fmt.Printf("\n\n pay attention! \n\nHere is the somewhat formatted issuer value prior to creating cert: %+v", pkixName)
 
 	// TODO: figure out how long we want these to be valid for
 	// if a short time, then we want to afford them a button to regenerate certs
@@ -82,10 +78,7 @@ func RandomKeyStoreForTest() X509KeyStore {
 	}
 
 	cert, err := x509.CreateCertificate(rand.Reader, template, template, &key.PublicKey, key)
-	parsedCert, err := x509.ParseCertificate(cert)
-	fmt.Printf("Here is the raw issuer value off the created cert: %v", parsedCert.Issuer)
-	fmt.Printf("\n\n THE ISSUER OF THE SELF SIGNED CERT: \n\n Here is the RDN sequence for the newly minted cert: %+v\n", parsedCert.Issuer.ToRDNSequence())
-	fmt.Printf("\n\n This should say AtScale: %v \n", parsedCert.Issuer.Organization)
+	_, err = x509.ParseCertificate(cert)
 	if err != nil {
 		panic(err)
 	}

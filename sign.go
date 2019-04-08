@@ -172,9 +172,7 @@ func (ctx *SigningContext) ConstructSignature(el *etree.Element, enveloped bool)
 
 	digest, err := ctx.digest(detatchedSignedInfo) // original line -- detached signed info at this point had namespaces added by the nsdetach function
 	// digest, err := ctx.digest(signedInfo.Copy()) // failed attempt - thought by preventing adding attributes to the signed info element it would yield a valid signature
-	fmt.Printf("The digest produced using %v is:\n%v\n", ctx.Hash, digest)
 
-	fmt.Printf("")
 	if err != nil {
 		return nil, err
 	}
